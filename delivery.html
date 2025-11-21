@@ -1,0 +1,60 @@
+
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Доставка — Лепестки</title>
+<style>body{font-family:Arial;background:#f3f4f6} .wrap{max-width:760px;margin:30px auto;padding:18px;background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}</style></head>
+<body>
+<div class="wrap">
+  <a href="shop_index.html">← Вернуться в магазин</a>
+  <h2>Оформление доставки</h2>
+  <div style="color:#6b7280">Телефон для получения по умолчанию: <strong>89080201966</strong>. Оплата — наложенный платёж.</div>
+  <form id="orderForm" style="margin-top:12px">
+    <label>Email (для уведомления)<br/><input type="email" id="email" required style="width:100%;padding:8px;margin-top:6px" /></label><br/><br/>
+    <label>Пароль (если нет аккаунта, будет создан)<br/><input type="password" id="pass" required style="width:100%;padding:8px;margin-top:6px" /></label><br/><br/>
+    <label>Телефон получателя<br/><input id="phone" value="89080201966" style="width:100%;padding:8px;margin-top:6px" /></label><br/><br/>
+    <label>Адрес (улица, дом)<br/><input id="address" required style="width:100%;padding:8px;margin-top:6px" /></label><br/><br/>
+    <label>Квартира / подъезд (опционально)<br/><input id="apt" style="width:100%;padding:8px;margin-top:6px" /></label><br/><br/>
+    <button type="submit" style="padding:8px 12px;background:#0b66ff;color:white;border:none;border-radius:6px">Оформить заказ</button>
+  </form>
+  <div id="msg" style="margin-top:12px;color:#6b7280"></div>
+</div>
+
+<script>
+function readCart(){ try{return JSON.parse(localStorage.getItem("lep_cart")||"[]");}catch(e){return []} }
+function saveOrder(order){
+  const orders = JSON.parse(localStorage.getItem("lep_orders")||"[]");
+  orders.unshift(order);
+  localStorage.setItem("lep_orders", JSON.stringify(orders));
+}
+
+document.getElementById("orderForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const pass = document.getElementById("pass").value;
+  const phone = document.getElementById("phone").value.trim() || "89080201966";
+  const address = document.getElementById("address").value.trim();
+  const apt = document.getElementById("apt").value.trim();
+  if(!email || !pass || !address){ document.getElementById("msg").innerText="Заполните обязательные поля"; return; }
+
+  // ensure user exists (register if needed)
+  let users = JSON.parse(localStorage.getItem("lep_users")||"[]");
+  let found = users.find(u=>u.email===email && u.pass===pass);
+  if(!found){
+    // register
+    users.push({email:email, pass:pass, id:Date.now()});
+    localStorage.setItem("lep_users", JSON.stringify(users));
+  }
+  localStorage.setItem("lep_user", JSON.stringify({email:email, id:Date.now()}));
+
+  const items = readCart();
+  if(items.length===0){ document.getElementById("msg").innerText="Корзина пуста"; return; }
+  const total = items.reduce((s,it)=>s+(Number(it.price)||0),0);
+  const order = {id:Date.now(), email:email, phone:phone, address:address, apt:apt, items:items, total:total, date:new Date().toISOString()};
+  saveOrder(order);
+  localStorage.removeItem("lep_cart");
+  document.getElementById("msg").innerText = "Заказ оформлен. Номер заказа: " + order.id + ". Оплатите при получении через НП, номер получателя: 89080201966";
+  setTimeout(()=>location.href='shop_index.html',2000);
+});
+</script>
+</body>
+</html>

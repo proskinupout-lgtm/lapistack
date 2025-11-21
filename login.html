@@ -1,0 +1,32 @@
+
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Вход — Лепестки</title>
+<style>body{font-family:Arial;background:#f3f4f6} .wrap{max-width:640px;margin:40px auto;padding:18px;background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}</style></head>
+<body>
+<div class="wrap">
+  <h2>Вход</h2>
+  <form id="loginForm">
+    <label>Email<br/><input type="email" id="email" required style="width:100%;padding:8px;margin-top:6px"/></label><br/><br/>
+    <label>Пароль<br/><input type="password" id="pass" required style="width:100%;padding:8px;margin-top:6px"/></label><br/><br/>
+    <button type="submit" style="padding:8px 12px;background:#0b66ff;color:white;border:none;border-radius:6px">Войти</button>
+    <a href="register.html" style="margin-left:10px">Нет аккаунта — Зарегистрироваться</a>
+  </form>
+  <div id="msg" style="margin-top:12px;color:#6b7280"></div>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  var email = document.getElementById("email").value.trim();
+  var pass = document.getElementById("pass").value;
+  var users = JSON.parse(localStorage.getItem("lep_users")||"[]");
+  var found = users.find(u=>u.email===email && u.pass===pass);
+  if(!found){ document.getElementById("msg").innerText = "Неправильный email или пароль"; return; }
+  localStorage.setItem("lep_user", JSON.stringify({email:found.email, id:found.id}));
+  document.getElementById("msg").innerText = "Вход выполнен. Перенаправление...";
+  setTimeout(()=>location.href='shop_index.html',700);
+});
+</script>
+</body>
+</html>

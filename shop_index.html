@@ -1,0 +1,123 @@
+
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Магазин «Лепестки» — Главная</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;margin:0;padding:0}
+  .wrap{max-width:1000px;margin:28px auto;padding:20px}
+  header{display:flex;justify-content:space-between;align-items:center;background:white;padding:12px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  nav a{margin-left:10px;color:#0b66ff;text-decoration:none;font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px}
+  .card{background:white;padding:12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;flex-direction:column}
+  .card img{height:140px;object-fit:contain;margin-bottom:8px;background:#fff;border-radius:6px}
+  .actions{margin-top:auto;display:flex;justify-content:space-between;align-items:center}
+  .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn-primary{background:#10b981;color:white}
+  .small{font-size:13px;color:#6b7280}
+  .top-links{display:flex;gap:8px;align-items:center}
+  footer{margin-top:22px;color:#6b7280;font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 style="margin:0">Магазин «Лепестки»</h1>
+      <div class="small">Каталог леденцов — добавляйте товары, оформляйте доставку</div>
+    </div>
+    <div class="top-links">
+      <nav>
+        <a href="shop_index.html">Главная</a>
+        <a href="add_product.html">Добавить товар</a>
+        <a href="register.html">Регистрация</a>
+        <a href="login.html">Вход</a>
+        <a href="delivery.html">Доставка / Оформить</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="catalogSection">
+    <h2 style="margin-top:18px">Каталог товаров</h2>
+    <div id="grid" class="grid"></div>
+  </section>
+
+  <section style="margin-top:18px">
+    <h3>Корзина</h3>
+    <div id="cartArea" style="background:white;padding:12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+      <div id="cartList" class="small">Корзина пуста</div>
+      <div style="margin-top:10px">
+        <button class="btn btn-primary" id="goCheckout">Оформить заказ</button>
+        <button class="btn" id="clearCart">Очистить</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>Прототип — данные хранятся локально в localStorage. Изображение-пример: <code>/mnt/data/6873440802.jpg</code></footer>
+</div>
+
+<script>
+// default image (uploaded by you)
+const defaultImg = "/mnt/data/6873440802.jpg";
+
+function readProducts(){
+  try { return JSON.parse(localStorage.getItem("lep_products")||"[]"); }
+  catch(e){ return []; }
+}
+function renderProducts(){
+  const grid = document.getElementById("grid");
+  const products = readProducts();
+  if(products.length===0){
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:18px;background:#fff;border-radius:8px">Нет товаров — перейдите в «Добавить товар».</div>';
+    return;
+  }
+  grid.innerHTML = products.map((p,idx)=>`
+    <div class="card">
+      <img src="${p.img||defaultImg}" alt="${escapeHtml(p.title)}" />
+      <div style="font-weight:700">${escapeHtml(p.title)}</div>
+      <div class="small">${escapeHtml(p.desc||'')}</div>
+      <div class="actions">
+        <div style="font-weight:700">${(Number(p.price)||0).toFixed(2)} ₽</div>
+        <div>
+          <button class="btn" onclick="addToCart(${idx})">В корзину</button>
+          <button class="btn btn-primary" onclick="buyDirect(${idx})">Купить</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// Cart functions
+function readCart(){ try{ return JSON.parse(localStorage.getItem("lep_cart")||"[]"); }catch(e){return []} }
+function writeCart(c){ localStorage.setItem("lep_cart", JSON.stringify(c)); renderCart(); }
+function addToCart(index){
+  const p = readProducts()[index];
+  if(!p) return alert("Товар не найден");
+  const c = readCart();
+  c.push(p);
+  writeCart(c);
+  alert("Добавлено в корзину");
+}
+function renderCart(){
+  const list = document.getElementById("cartList");
+  const c = readCart();
+  if(c.length===0){ list.innerText = "Корзина пуста"; return; }
+  list.innerHTML = '<ul style="margin:0;padding-left:18px">'+c.map((it,i)=>`<li>${escapeHtml(it.title)} — ${(Number(it.price)||0).toFixed(2)} ₽ <button onclick="removeFromCart(${i})" style="margin-left:8px">X</button></li>`).join("") + '</ul>';
+}
+function removeFromCart(i){ const c=readCart(); c.splice(i,1); writeCart(c); }
+
+document.getElementById("clearCart").addEventListener("click", ()=>{ localStorage.removeItem("lep_cart"); renderCart(); });
+document.getElementById("goCheckout").addEventListener("click", ()=>{ location.href='delivery.html'; });
+
+function buyDirect(index){ const p = readProducts()[index]; localStorage.setItem("lep_cart", JSON.stringify([p])); location.href='delivery.html'; }
+
+// initial render
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>

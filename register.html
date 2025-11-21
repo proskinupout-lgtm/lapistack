@@ -1,0 +1,34 @@
+
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Регистрация — Лепестки</title>
+<style>body{font-family:Arial;background:#f3f4f6} .wrap{max-width:640px;margin:40px auto;padding:18px;background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}</style></head>
+<body>
+<div class="wrap">
+  <h2>Регистрация</h2>
+  <form id="regForm">
+    <label>Email<br/><input type="email" id="email" required style="width:100%;padding:8px;margin-top:6px"/></label><br/><br/>
+    <label>Пароль<br/><input type="password" id="pass" required style="width:100%;padding:8px;margin-top:6px"/></label><br/><br/>
+    <button type="submit" style="padding:8px 12px;background:#10b981;color:white;border:none;border-radius:6px">Зарегистрироваться</button>
+    <a href="login.html" style="margin-left:10px">Уже есть аккаунт — Войти</a>
+  </form>
+  <div id="msg" style="margin-top:12px;color:#6b7280"></div>
+</div>
+
+<script>
+document.getElementById("regForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  var email = document.getElementById("email").value.trim();
+  var pass = document.getElementById("pass").value;
+  if(!email || !pass){ show("Введите email и пароль"); return; }
+  var users = JSON.parse(localStorage.getItem("lep_users")||"[]");
+  if(users.find(u=>u.email===email)){ show("Пользователь с таким email уже существует"); return; }
+  users.push({email:email, pass:pass, id:Date.now()});
+  localStorage.setItem("lep_users", JSON.stringify(users));
+  localStorage.setItem("lep_user", JSON.stringify({email:email, id:Date.now()}));
+  show("Готово — вы зарегистрированы и вошли. Возврат на главную..."); setTimeout(()=>location.href='shop_index.html',900);
+});
+function show(t){ document.getElementById("msg").innerText = t; }
+</script>
+</body>
+</html>
